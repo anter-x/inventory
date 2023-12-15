@@ -16,10 +16,13 @@ export class DestructionRecord implements Entity {
   @jsonMember
   public destractionNumber!: string;
 
-  @jsonMember({ serializer: (employee) => employee.uid, deserializer: (id) => new Employee({ id }) })
+  @jsonMember
+  public description!: string;
+
+  @jsonMember({ serializer: (employee) => employee.id, deserializer: (id) => new Employee({ id }) })
   public whoPassed!: Employee;
 
-  @jsonMember({ serializer: (employee) => employee.uid, deserializer: (id) => new Employee({ id }) })
+  @jsonMember({ serializer: (employee) => employee.id, deserializer: (id) => new Employee({ id }) })
   public whoAccepted!: Employee;
 
   public constructor(init?: Partial<DestructionRecord>) {
@@ -32,6 +35,7 @@ export type DestructionRecordSnapshot = Pick<
   | 'id'
   | 'hdNumber'
   | 'destractionNumber'
+  | 'description'
 > & {
   acceptedAt: string,
   whoPassed: string,

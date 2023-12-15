@@ -9,17 +9,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ReactiveFormsModule, AbstractControl, FormBuilder, Validators } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { combineLatest, EMPTY, filter, map, Observable, Subject, switchMap, takeUntil, tap } from 'rxjs';
 import { EmployeesCollectionService } from './collection/employees-collection.service';
 import { Employee } from './entity/employee';
 import { DestructionRecordsCollection } from './collection/destruction-records-collection.service';
 import { DestructionRecord } from './entity/destruction-record';
+import { DestructionDataSource } from './collection/destruction-data-source';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, FirebaseAppModule, FirestoreModule, MatDividerModule, MatButtonModule, MatInputModule, MatIconModule, MatTabsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterOutlet, FirebaseAppModule, FirestoreModule, MatDividerModule, MatButtonModule, MatInputModule, MatIconModule, MatTabsModule, MatTableModule, MatSelectModule, ReactiveFormsModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -28,6 +31,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private destroyed$ = new Subject<void>();
   private addEmployee$ = new Subject<string>();
+  private addDestructionRecord$ = new Subject<DestructionRecord>();
   public employeeForm = this.fb.group({
     displayName: [
       '',
@@ -38,12 +42,22 @@ export class AppComponent implements OnInit, OnDestroy {
     ],
   });
   public employees$!: Observable<Employee[]>;
-  public destractionRecords$!: Observable<DestructionRecord[]>;
+
+  public destructionForm = this.fb.nonNullable.group({
+    hdNumber: ['', Validators.required],
+    whoPassed: ['', Validators.required],
+    whoAccepted: ['', Validators.required],
+    destractionNumber: ['', Validators.required],
+    description: ['']
+  });
+
+  public displayedColumns: string[] = ['acceptedAt', 'hdNumber', 'whoPassed', 'whoAccepted', 'destractionNumber', 'description'];
 
   constructor(
     private fb: FormBuilder,
     private employees: EmployeesCollectionService,
-    private destractionRecords: DestructionRecordsCollection
+    private destructionRecords: DestructionRecordsCollection,
+    public destructionDataSource: DestructionDataSource
   ) { }
 
   ngOnInit(): void {
@@ -56,9 +70,10 @@ export class AppComponent implements OnInit, OnDestroy {
       takeUntil(this.destroyed$)
     );
 
-    this.destractionRecords$ = this.destractionRecords.items().pipe(
+    this.addDestructionRecord$.pipe(
       takeUntil(this.destroyed$),
-    );
+      switchMap((destructionRecord) => this.destructionRecords.add(destructionRecord)),
+    ).subscribe();
   }
 
   ngOnDestroy(): void {
@@ -78,5 +93,23 @@ export class AppComponent implements OnInit, OnDestroy {
 
   removeEmployee(id: string) {
     this.employees.delete(id).subscribe();
+  }
+
+  addDestructionRecord() {
+    if (!this.destructionForm.valid) {
+      return;
+    }
+
+    const destruction = new DestructionRecord({
+      acceptedAt: new Date(),
+      hdNumber: this.destructionForm.value.hdNumber,
+      whoPassed: new Employee({ id: this.destructionForm.value.whoPassed }),
+      whoAccepted: new Employee({ id: this.destructionForm.value.whoAccepted }),
+      destractionNumber: this.destructionForm.value.destractionNumber,
+      description: this.destructionForm.value.description
+    });
+
+    this.addDestructionRecord$.next(destruction);
+    this.destructionForm.reset();
   }
 }

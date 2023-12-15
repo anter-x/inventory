@@ -14,7 +14,7 @@ export class DestructionRecordsCollection extends GenericCollection<DestructionR
   }
 
   protected initCollection(): void {
-    this.collection = collection(this.firestore, 'destraction_records') as CollectionReference<DestructionRecord>;
+    this.collection = collection(this.firestore, 'destruction_records').withConverter(this.getConverter()) as CollectionReference<DestructionRecord>;
   }
 
   protected getConverter() {

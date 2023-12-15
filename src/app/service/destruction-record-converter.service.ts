@@ -13,7 +13,7 @@ export class DestructionRecordConverterService extends AbstractConverter<Destruc
   }
 
   fromFirestore(snapshot: QueryDocumentSnapshot): DestructionRecord {
-    const destractionRecord = this.getSerializer(DestructionRecord).parse(snapshot);
+    const destractionRecord = this.getSerializer(DestructionRecord).parse(snapshot.data());
     if (destractionRecord) {
       return destractionRecord;
     }

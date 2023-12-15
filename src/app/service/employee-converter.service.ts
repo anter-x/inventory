@@ -13,7 +13,7 @@ export class EmployeeConverterService extends AbstractConverter<Employee> implem
   }
 
   fromFirestore(snapshot: QueryDocumentSnapshot): Employee {
-    const employee = this.getSerializer(Employee).parse(snapshot);
+    const employee = this.getSerializer(Employee).parse(snapshot.data());
     if (employee) {
       return employee;
     }

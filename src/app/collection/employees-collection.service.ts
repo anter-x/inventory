@@ -14,7 +14,7 @@ export class EmployeesCollectionService extends GenericCollection<Employee> {
   }
 
   protected initCollection(): void {
-    this.collection = collection(this.firestore, 'employees') as CollectionReference<Employee>;
+    this.collection = collection(this.firestore, 'employees').withConverter(this.getConverter()) as CollectionReference<Employee>;
   }
 
   protected getConverter() {
