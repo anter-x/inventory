@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { DataSource } from '@angular/cdk/collections';
-import { Observable, forkJoin, map, mergeMap } from 'rxjs';
+import { Observable, catchError, forkJoin, map, mergeMap, of } from 'rxjs';
 import { DestructionRecord } from '../entity/destruction-record';
 import { DestructionRecordsCollection } from './destruction-records-collection.service';
 import { EmployeesCollectionService } from './employees-collection.service';
-import { Employee } from '../entity/employee';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +37,10 @@ export class DestructionDataSource extends DataSource<DestructionRecord> {
           map((employee) => {
             destructionRecord.whoPassed = employee;
             return destructionRecord;
+          }),
+          catchError(() => {
+            destructionRecord.whoPassed.displayName = 'undefined';
+            return of(destructionRecord);
           })
         );
       })
@@ -55,6 +58,10 @@ export class DestructionDataSource extends DataSource<DestructionRecord> {
           map((employee) => {
             destructionRecord.whoAccepted = employee;
             return destructionRecord;
+          }),
+          catchError(() => {
+            destructionRecord.whoAccepted.displayName = 'undefined';
+            return of(destructionRecord);
           })
         );
       })
